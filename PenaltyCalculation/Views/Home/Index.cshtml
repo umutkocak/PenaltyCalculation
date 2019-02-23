@@ -2,30 +2,99 @@
     ViewBag.Title = "Home Page";
 }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+
+
+<div class="form-group row" style="margin: 25px;">
+    <div class="col-md-12">
+        <div class="form-group">
+            <div class="col-md-6">
+                <form id="form">
+                    <div class="form-group">
+                        <label>Delivery Date</label>
+                        <input type="date" class="form-control" id="deliveryDate" required="">
+                    </div>
+                    <div class="form-group">
+                        <label>Returned Date</label>
+                        <input type="date" class="form-control" id="returnedDate" required="">
+                    </div>
+                    <div class="form-group">
+                        <label>Country</label>
+                        <select class="form-control" id="countryId" required>
+                            <option value="1">Turkey</option>
+                            <option value="2">Israel</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-primary">Calculate</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card" style="width: 18rem;">
+                    <ul id="list" class="list-group list-group-flush"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
-</div>
+@section scripts{
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            $("#list").hide();
+
+
+            $("form").submit(function (event) {
+                event.preventDefault();
+
+                var data = new Object();
+                data.DeliveryDate = $("#deliveryDate").val();
+                data.ReturnedDate = $("#returnedDate").val();
+                data.CountryId = $("#countryId").val();
+
+
+                $.ajax({
+                    type: "POST",
+                    url: "/calculation",
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        if (response !== null) {
+                            $("#list").empty();
+
+                            $("#list").append(
+                                '<li class="list-group-item"><b style="color: blue;">Total business days:</b>' +
+                                response.data.TotalDay +
+                                '</li>');
+                            $("#list").append(
+                                '<li class="list-group-item"><b style="color: red;">Your number of days delayed:</b>' +
+                                response.data.Calculation.BusinessDay +
+                                '</li>');
+                            $("#list").append(
+                                '<li class="list-group-item"><b style="color: darkred;">The amount you need to pay:</b>' +
+                                response.data.Calculation.Penalty +
+                                '</li>');
+                            $("#list").show();
+
+
+                        } else {
+                            alert("Error");
+                        }
+                    },
+                    failure: function (response) {
+                        alert(response.responseText);
+                    },
+                    error: function (response) {
+                        alert(response.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+}
